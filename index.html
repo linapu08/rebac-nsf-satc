@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReBac &middot; NSF SaTC &middot; Modeling and Mitigating Reflective Backscatter Side-Channel Attacks in Everyday Devices</title>
+<meta name="description" content="NSF SaTC collaborative project (Awards 2555491 and 2555492) led by Lina Pu at The University of Alabama and Yu Luo at Mississippi State University, studying and defending against reflective backscatter (ReBac) side-channel attacks on everyday devices.">
+<meta name="author" content="Lina Pu, The University of Alabama; Yu Luo, Mississippi State University">
+<meta property="og:title" content="Modeling and Mitigating Reflective Backscatter Side-Channel Attacks (ReBac) in Everyday Devices">
+<meta property="og:description" content="NSF SaTC Awards 2555491 and 2555492. A hard shell does not protect a soft core: unshielded internal cables leak what you type, from meters away and through walls.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%23131a2e'/><g fill='none' stroke='%23fbbf24' stroke-width='6' stroke-linecap='round'><path d='M26 62a24 24 0 0 1 48 0'/><path d='M38 62a12 12 0 0 1 24 0'/></g><circle cx='50' cy='62' r='6' fill='%23fbbf24'/></svg>">
+
+<style>
+:root{
+  --ink:#0e1420;
+  --body:#333d4d;
+  --muted:#64748b;
+  --deep-900:#0a0f1e;
+  --deep-800:#131a2e;
+  --deep-700:#232c4a;
+  --accent:#b45309;
+  --accent-bright:#fbbf24;
+  --crimson:#9e1b32;
+  --paper:#ffffff;
+  --shell:#f6f6f4;
+  --line:#e3e3df;
+  --radius:14px;
+  --maxw:1120px;
+  --measure:72ch;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:78px;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--body);
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:17px;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Source Serif 4",Georgia,serif;color:var(--ink);line-height:1.2;margin:0 0 .5em;font-weight:600}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+p{margin:0 0 1.1em}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.measure{max-width:var(--measure)}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);
+  backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{max-width:var(--maxw);margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:18px;height:64px}
+.nav .nsf{display:flex;align-items:center;flex:0 0 auto}
+.nav .nsf img{height:38px;width:auto;display:block}
+.nav .nsf+.brand{padding-left:18px;border-left:1px solid var(--line)}
+.brand{font-family:"Source Serif 4",serif;font-weight:700;color:var(--ink);font-size:1.06rem;letter-spacing:-.01em;white-space:nowrap}
+.brand span{color:var(--accent)}
+.nav ul{display:flex;gap:24px;list-style:none;margin:0;padding:0;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+.nav ul::-webkit-scrollbar{display:none}
+.nav ul a{color:var(--body);font-size:.86rem;font-weight:500;white-space:nowrap;padding:4px 0;border-bottom:2px solid transparent}
+.nav ul a:hover,.nav ul a.on{color:var(--ink);border-bottom-color:var(--accent);text-decoration:none}
+
+/* ---------- hero ---------- */
+.hero{
+  background:
+    radial-gradient(1000px 500px at 84% -10%, rgba(251,191,36,.20), transparent 62%),
+    radial-gradient(720px 400px at 6% 106%, rgba(129,140,248,.16), transparent 60%),
+    linear-gradient(166deg,var(--deep-900) 0%,var(--deep-800) 50%,var(--deep-700) 100%);
+  color:#e8eaf2;position:relative;overflow:hidden;
+}
+.hero::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:100% 46px;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 40%,transparent);
+          mask-image:linear-gradient(to bottom,transparent,#000 40%,transparent);
+}
+.hero-in{position:relative;z-index:2;max-width:var(--maxw);margin:0 auto;padding:74px 28px 64px;
+  display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:52px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:.75rem;font-weight:700;letter-spacing:.11em;
+  color:#fcd88a;border:1px solid rgba(251,191,36,.4);
+  background:rgba(251,191,36,.10);padding:7px 14px;border-radius:999px;margin-bottom:22px}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--accent-bright);box-shadow:0 0 0 4px rgba(251,191,36,.2)}
+.hero h1{color:#fff;font-size:clamp(1.95rem,4.1vw,3.05rem);letter-spacing:-.02em;margin-bottom:.45em;font-weight:700}
+.hero .lede{font-size:1.1rem;color:#c4c9dc;max-width:60ch;margin-bottom:26px}
+.hero .pi{font-size:.98rem;color:#e8eaf2;margin-bottom:26px}
+.hero .pi strong{color:#fff}
+.hero .pi span{color:#a3abc4}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:28px;padding:0;list-style:none}
+.chips li{font-size:.79rem;color:#d3d8e8;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:6px 12px;font-variant-numeric:tabular-nums}
+.btn{display:inline-flex;align-items:center;gap:9px;background:var(--accent-bright);color:#1a1405;
+  font-weight:600;font-size:.9rem;padding:12px 20px;border-radius:10px;border:1px solid transparent}
+.btn:hover{background:#fcd34d;text-decoration:none}
+.btn.ghost{background:transparent;color:#d3d8e8;border-color:rgba(255,255,255,.26)}
+.btn.ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-row{display:flex;flex-wrap:wrap;gap:12px}
+.hero-fig{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.13);border-radius:18px;padding:20px}
+.hero-fig svg{width:100%;height:auto;display:block}
+.hero-fig figcaption{font-size:.76rem;color:#a3abc4;margin-top:12px;line-height:1.5}
+
+/* ---------- sections ---------- */
+section{padding:82px 0;border-top:1px solid var(--line)}
+section.alt{background:var(--shell)}
+.kicker{font-size:.71rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:12px;display:block}
+h2{font-size:clamp(1.65rem,2.9vw,2.2rem);letter-spacing:-.015em;margin-bottom:.55em}
+.sub{font-size:1.06rem;color:var(--muted);max-width:66ch;margin-bottom:44px}
+h3{font-size:1.16rem;margin-bottom:.45em}
+
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+section.alt .card{background:#fff}
+.card p:last-child{margin-bottom:0}
+.card .num{font-family:"Source Serif 4",serif;font-size:.8rem;font-weight:700;color:var(--accent);
+  letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:10px}
+
+.pull{border-left:3px solid var(--accent);padding:6px 0 6px 24px;margin:0 0 36px;
+  font-family:"Source Serif 4",serif;font-size:1.3rem;line-height:1.5;color:var(--ink);max-width:62ch}
+
+/* stat strip */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin:36px 0 0}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+section.alt .stat{background:#fff}
+.stat b{display:block;font-family:"Source Serif 4",serif;font-size:1.8rem;color:var(--deep-700);
+  line-height:1.1;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.stat span{font-size:.83rem;color:var(--muted);line-height:1.45;display:block}
+
+/* research objectives */
+.obj{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:28px 26px}
+.obj .badge{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:12px;
+  background:linear-gradient(150deg,var(--deep-700),var(--deep-900));color:var(--accent-bright);margin-bottom:16px}
+.obj .badge b{font-family:"Source Serif 4",serif;font-size:1.15rem}
+.obj p{margin-bottom:0;font-size:.96rem}
+
+/* wide technical figures */
+.figs{display:flex;flex-direction:column;gap:24px}
+figure.wide{margin:0;background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+figure.wide img{width:100%;height:auto;display:block;background:#fff}
+figure.wide figcaption{padding:16px 22px;font-size:.88rem;color:var(--body);line-height:1.55;
+  border-top:1px solid var(--line);background:var(--shell)}
+section.alt figure.wide figcaption{background:#fafaf8}
+figure.wide figcaption b{color:var(--ink);font-weight:600}
+
+/* outreach cards with a figure on top */
+.figcard{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.figcard .shotwrap{background:var(--shell);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;padding:20px}
+section.alt .figcard .shotwrap{background:#fafaf8}
+.figcard .shotwrap img{max-width:100%;max-height:300px;width:auto;height:auto;display:block;border-radius:6px}
+.figcard .num,.figcard h3,.figcard p{padding-left:26px;padding-right:26px}
+.figcard .num{margin-top:24px}
+.figcard p{font-size:.94rem;padding-bottom:26px;margin-bottom:0}
+
+/* publications */
+.pubs{list-style:none;padding:0;margin:0;counter-reset:pub}
+.pubs li{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px 26px 22px 62px;margin-bottom:14px;position:relative}
+.pubs li::before{counter-increment:pub;content:counter(pub);position:absolute;left:22px;top:23px;
+  font-family:"Source Serif 4",serif;font-weight:700;color:var(--accent);font-size:1.05rem}
+.pubs .t{font-family:"Source Serif 4",serif;font-size:1.08rem;font-weight:600;color:var(--ink);
+  display:block;margin-bottom:6px;line-height:1.35}
+.pubs .a{font-size:.92rem;color:var(--body);display:block;margin-bottom:4px}
+.pubs .a em{font-style:normal;color:var(--ink);font-weight:600;border-bottom:2px solid rgba(180,83,9,.32)}
+.pubs .v{font-size:.88rem;color:var(--muted);display:block}
+.pubs .links{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.tag{display:inline-block;font-size:.74rem;font-weight:600;letter-spacing:.03em;padding:4px 10px;
+  border-radius:6px;background:var(--shell);border:1px solid var(--line);color:var(--body)}
+a.tag:hover{background:#fdf3e6;border-color:var(--accent);color:var(--accent);text-decoration:none}
+.tag.hi{background:rgba(158,27,50,.07);border-color:rgba(158,27,50,.26);color:var(--crimson)}
+
+/* people */
+.people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.person{display:grid;grid-template-columns:132px minmax(0,1fr);gap:24px;align-items:start;
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:26px}
+.person img{width:132px;height:132px;border-radius:12px;object-fit:cover;background:var(--shell);display:block}
+.person h3{margin-bottom:2px}
+.person .role{font-size:.88rem;color:var(--accent);font-weight:600;margin-bottom:2px}
+.person .aff{font-size:.88rem;color:var(--muted);margin-bottom:12px}
+.person p{font-size:.92rem}
+.join{margin-top:22px;background:linear-gradient(135deg,var(--deep-900),var(--deep-700));
+  color:#d3d8e8;border-radius:var(--radius);padding:26px 30px}
+.join h3{color:#fff;margin-bottom:.4em}
+.join p{margin-bottom:0;font-size:.95rem;color:#c4c9dc}
+.join a{color:var(--accent-bright)}
+
+/* footer */
+footer{background:var(--deep-900);color:#a8b0c8;padding:56px 0 40px;font-size:.9rem}
+footer h4{color:#fff;font-size:1rem;margin-bottom:.5em}
+footer a{color:var(--accent-bright)}
+.foot-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:48px;margin-bottom:36px}
+.ack{background:rgba(255,255,255,.05);border-left:3px solid var(--accent-bright);
+  padding:18px 22px;border-radius:0 10px 10px 0;font-size:.86rem;line-height:1.6;color:#c4c9dc}
+.foot-links{list-style:none;padding:0;margin:0}
+.foot-links li{margin-bottom:8px}
+.legal{border-top:1px solid rgba(255,255,255,.12);padding-top:22px;font-size:.8rem;color:#7f88a4;
+  display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
+
+@media (max-width:980px){
+  .hero-in{grid-template-columns:1fr;gap:36px;padding:54px 28px 50px}
+  .grid-3,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .people{grid-template-columns:1fr}
+  .foot-grid{grid-template-columns:1fr;gap:30px}
+}
+@media (max-width:680px){
+  body{font-size:16px}
+  .wrap{padding:0 20px}
+  .nav-in{padding:0 20px;gap:14px}
+  .nav ul{gap:16px}
+  section{padding:58px 0}
+  .grid-2,.grid-3,.stats{grid-template-columns:1fr}
+  .person{grid-template-columns:1fr;gap:18px}
+  .person img{width:112px;height:112px}
+  .pubs li{padding:20px 20px 20px 54px}
+  .figcard .shotwrap img{max-height:240px}
+}
+@media print{
+  .nav,.hero::after{display:none}
+  body{font-size:11pt}
+  section{padding:20px 0;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav class="nav">
+  <div class="nav-in">
+    <a class="nsf" href="https://www.nsf.gov" target="_blank" rel="noopener"
+       aria-label="U.S. National Science Foundation">
+      <img id="nsf-logo" src="images/nsf-logo.png" alt="U.S. National Science Foundation" width="260" height="260">
+    </a>
+    <a class="brand" href="#top">ReBac<span>.</span> <span style="font-weight:400;color:var(--muted);font-size:.85rem">NSF SaTC</span></a>
+    <ul>
+      <li><a href="#vision">Vision</a></li>
+      <li><a href="#objectives">Objectives</a></li>
+      <li><a href="#figures">How It Works</a></li>
+      <li><a href="#publications">Publications</a></li>
+      <li><a href="#people">People</a></li>
+      <li><a href="#outreach">Education &amp; Outreach</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top">
+  <div class="hero-in">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> NSF SaTC &nbsp;&middot;&nbsp; AWARDS 2555491 &amp; 2555492</span>
+      <h1>Modeling and Mitigating Reflective Backscatter Side&#8209;Channel Attacks in Everyday Devices</h1>
+      <p class="lede">Consumer electronics are built on the assumption that an intact enclosure protects the data moving inside it. Unshielded flex cables and PCB traces break that assumption: illuminated by a low&#8209;power radio signal, they reflect back what a person is typing, clicking, and sensing, from meters away and through walls.</p>
+      <p class="pi"><strong>Lina Pu</strong>, The University of Alabama &nbsp;&middot;&nbsp; <strong>Yu Luo</strong>, Mississippi State University<br>
+      <span>A collaborative project of two NSF SaTC awards</span></p>
+      <ul class="chips">
+        <li>Oct 2026 &ndash; Sep 2029</li>
+        <li>$599,999 combined</li>
+        <li>NSF CISE / CNS</li>
+        <li>Secure &amp; Trustworthy Cyberspace (SaTC 2.0)</li>
+      </ul>
+      <div class="btn-row">
+        <a class="btn" href="https://www.nsf.gov/awardsearch/show-award?AWD_ID=2555491" target="_blank" rel="noopener">
+          Award 2555491 (UA)
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+        </a>
+        <a class="btn ghost" href="https://www.nsf.gov/awardsearch/show-award?AWD_ID=2555492" target="_blank" rel="noopener">
+          Award 2555492 (MSU)
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <figure class="hero-fig">
+      <!-- Original schematic: illuminator -> enclosed device with unshielded internal cable -> receiver -->
+      <svg viewBox="0 0 460 290" role="img" aria-label="Schematic of a ReBac attack: a transmitter illuminates a device through a wall, internal cables modulate the reflection, and a receiver decodes the serial data">
+        <defs>
+          <linearGradient id="wave" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity=".85"/>
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity=".15"/>
+          </linearGradient>
+          <linearGradient id="ret" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0%" stop-color="#818cf8" stop-opacity=".85"/>
+            <stop offset="100%" stop-color="#818cf8" stop-opacity=".15"/>
+          </linearGradient>
+        </defs>
+
+        <!-- wall -->
+        <rect x="150" y="18" width="16" height="254" fill="#1e2540" stroke="#2f3a5f"/>
+        <g stroke="#2f3a5f" stroke-width="1">
+          <path d="M150 52h16M150 86h16M150 120h16M150 154h16M150 188h16M150 222h16"/>
+        </g>
+        <text x="128" y="284" fill="#7f88a4" font-size="9.5" font-family="Inter,sans-serif">wall</text>
+
+        <!-- attacker: TX -->
+        <g transform="translate(46 96)">
+          <rect x="-24" y="-16" width="48" height="32" rx="5" fill="#131a2e" stroke="#3d4870"/>
+          <text x="0" y="4" fill="#fbbf24" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">TX</text>
+          <path d="M0 -16 v-14" stroke="#fbbf24" stroke-width="2"/>
+          <path d="M-7 -30 h14" stroke="#fbbf24" stroke-width="2"/>
+        </g>
+        <text x="16" y="132" fill="#c4c9dc" font-size="10" font-family="Inter,sans-serif">illuminator</text>
+
+        <!-- attacker: RX -->
+        <g transform="translate(46 200)">
+          <rect x="-24" y="-16" width="48" height="32" rx="5" fill="#131a2e" stroke="#3d4870"/>
+          <text x="0" y="4" fill="#a5b4fc" font-size="11" font-weight="700" text-anchor="middle" font-family="Inter,sans-serif">RX</text>
+          <path d="M0 -16 v-14" stroke="#a5b4fc" stroke-width="2"/>
+          <path d="M-7 -30 h14" stroke="#a5b4fc" stroke-width="2"/>
+        </g>
+        <text x="10" y="236" fill="#c4c9dc" font-size="10" font-family="Inter,sans-serif">receiver</text>
+
+        <!-- outgoing probe -->
+        <path d="M72 92 C 130 78, 210 78, 268 104" stroke="url(#wave)" stroke-width="2.6" fill="none"/>
+        <path d="M255 96 l14 8 -13 8" fill="none" stroke="#fbbf24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="176" y="72" fill="#fcd88a" font-size="9.5" font-family="Inter,sans-serif">low-power probe</text>
+
+        <!-- returning modulated reflection -->
+        <path d="M268 150 C 210 190, 130 196, 72 196" stroke="url(#ret)" stroke-width="2.6" fill="none"/>
+        <path d="M86 188 l-14 8 13 8" fill="none" stroke="#a5b4fc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="132" y="216" fill="#b9c0e8" font-size="9.5" font-family="Inter,sans-serif">data-modulated reflection</text>
+
+        <!-- victim device enclosure -->
+        <g transform="translate(286 128)">
+          <rect x="0" y="-42" width="150" height="96" rx="10" fill="#161d33" stroke="#3d4870" stroke-width="1.4"/>
+          <text x="75" y="-50" fill="#c4c9dc" font-size="10" text-anchor="middle" font-family="Inter,sans-serif">enclosure (intact)</text>
+
+          <!-- two internal boards linked by an unshielded flex cable -->
+          <rect x="14" y="-24" width="40" height="30" rx="3" fill="#1f2a44" stroke="#4b5893"/>
+          <rect x="96" y="-24" width="40" height="30" rx="3" fill="#1f2a44" stroke="#4b5893"/>
+          <g stroke="#fbbf24" stroke-width="1.6" fill="none">
+            <path d="M54 -16 h42"/><path d="M54 -11 h42"/><path d="M54 -6 h42"/><path d="M54 -1 h42"/>
+          </g>
+          <text x="75" y="18" fill="#fcd88a" font-size="9" text-anchor="middle" font-family="Inter,sans-serif">unshielded flex cable</text>
+          <text x="75" y="30" fill="#7f88a4" font-size="8.5" text-anchor="middle" font-family="Inter,sans-serif">UART &middot; I&#178;C &middot; SPI</text>
+
+          <!-- serial waveform leaving the cable -->
+          <path d="M14 44 h10 v-12 h9 v12 h7 v-12 h11 v12 h8 v-12 h9 v12 h10 v-12 h9 v12 h13"
+                fill="none" stroke="#a5b4fc" stroke-width="1.6"/>
+        </g>
+        <text x="330" y="216" fill="#b9c0e8" font-size="9.5" font-family="Inter,sans-serif">keystrokes, clicks, sensor data</text>
+      </svg>
+      <figcaption>A compact transmitter illuminates the device through the enclosure. Digital activity on unshielded internal interconnects changes their impedance, modulating the reflected wave. A receiver demodulates that reflection to reconstruct the plaintext serial stream, with no implant and no line of sight.</figcaption>
+    </figure>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ VISION ============ -->
+<section id="vision">
+  <div class="wrap">
+    <span class="kicker">Research Vision</span>
+    <h2>A hard shell around a soft core</h2>
+
+    <p class="pull">This project establishes a scientific foundation for understanding and defending against reflective backscatter side&#8209;channel attacks on everyday devices.</p>
+
+    <div class="grid-2" style="align-items:start;gap:44px">
+      <div class="measure">
+        <p>The consumer electronics industry invests heavily in hardening external perimeters. Wireless links are encrypted, external interconnects such as USB are shielded. Past the plastic and glass, though, implicit trust takes over: designers assume an intact housing implies secure internal buses.</p>
+        <p>In practice, modular components are linked by unshielded flex cables and PCB traces. I&#178;C carries sensor and actuator data, UART services detachable inputs such as game controller rails, and SPI connects touchscreens and cameras. Teardowns of ordinary keyboards, mice, controllers, and smart&#8209;home devices show these conductors sitting exposed, an internal attack surface that perimeter&#8209;focused defenses routinely overlook.</p>
+        <p>Prior electromagnetic side channels were dismissed as impractical for good reason. They are <em>passive</em>, listening for faint unintentional emanations, which forces an adversary to within centimeters or behind a meter&#8209;scale antenna. Weak signals against a high noise floor kept remote eavesdropping on internal buses inside the laboratory.</p>
+        <p><strong>ReBac inverts that.</strong> Instead of listening, a compact device <em>illuminates</em> the target with a low&#8209;power radio signal that passes through non&#8209;metallic enclosures. Impedance changes driven by digital activity modulate the reflected waveform, and a receiver demodulates it to reconstruct internal data streams from several meters away, without line of sight and without any implant in the device.</p>
+      </div>
+
+      <div style="display:grid;gap:18px">
+        <div class="card">
+          <span class="num">Capability 01</span>
+          <h3>Digital exfiltration</h3>
+          <p>Decoding the actual bitstreams on serial links carried over unshielded flex cables and PCB traces, recovering raw keystrokes, controller inputs, and sensor traffic as plaintext.</p>
+        </div>
+        <div class="card">
+          <span class="num">Capability 02</span>
+          <h3>Analog inference</h3>
+          <p>Recognizing repeatable analog signatures produced by usage itself, such as the current pattern of a keyboard matrix scan or the PWM drive inside a mouse, even where no serial bus is exposed.</p>
+        </div>
+        <div class="card" style="background:linear-gradient(140deg,var(--deep-900),var(--deep-700));border-color:transparent">
+          <span class="num" style="color:var(--accent-bright)">Why it matters</span>
+          <h3 style="color:#fff">Billions of devices</h3>
+          <p style="color:#c4c9dc">Keyboards, mice, detachable peripherals, IoT gadgets, and DIY systems all share the same internal construction. The vulnerability is a property of how devices are built, not of any one product.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:58px;margin-bottom:6px">What the pilot study established</h3>
+    <p style="color:var(--muted);max-width:66ch;margin-bottom:0">Measured in the PIs' study published at the IEEE Symposium on Security and Privacy in May 2025, whose Meta Review recognized the work for both <em>Identifies an Impactful Vulnerability</em> and <em>Establishes a New Research Direction</em>.</p>
+    <div class="stats">
+      <div class="stat"><b>14.5 m</b><span>line&#8209;of&#8209;sight range for exfiltrating internal serial data</span></div>
+      <div class="stat"><b>4.5 m</b><span>range with no line of sight, reaching through obstacles</span></div>
+      <div class="stat"><b>3 Mbps</b><span>highest internal data rate recovered in testing</span></div>
+      <div class="stat"><b>3 protocols</b><span>UART, I&#178;C, and SPI, over PCB traces, flex and ribbon cables</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OBJECTIVES ============ -->
+<section id="objectives" class="alt">
+  <div class="wrap">
+    <span class="kicker">Research Objectives</span>
+    <h2>Three objectives</h2>
+    <p class="sub">ReBac is a newly identified threat with broad implications, so it needs a systematic investigation of its physical principles, its practical impact, and its mitigations. The project pursues three integrated objectives.</p>
+
+    <div class="grid-3">
+      <article class="obj">
+        <span class="badge"><b>01</b></span>
+        <h3>Theoretical framework</h3>
+        <p>Build a predictive model linking victim&#8209;device parameters such as cable length, geometry, and protocol; environmental conditions such as distance and physical obstacles; and attacker configuration such as transmit power, frequency, and receiver design, to overall attack feasibility. The goal is vulnerability assessment across device families without exhaustive experimental trials.</p>
+      </article>
+      <article class="obj">
+        <span class="badge"><b>02</b></span>
+        <h3>End&#8209;to&#8209;end demonstrations</h3>
+        <p>Determine what sensitive user data can actually be recovered from real commodity products: keyboards, mice, controllers, and IoT gadgets. Demonstrating both the digital and analog capabilities under realistic operating conditions is what turns an abstract leak into a quantified privacy and security harm.</p>
+      </article>
+      <article class="obj">
+        <span class="badge"><b>03</b></span>
+        <h3>Cost&#8209;effective defenses</h3>
+        <p>Turn adversarial insight into countermeasures a manufacturer would actually adopt: safe&#8209;length and layout guidelines for internal interconnects, lightweight shielding strategies, and data&#8209;randomization techniques. The intended output is actionable guidance and reproducible test reports for hardening the next generation of devices.</p>
+      </article>
+    </div>
+
+    <p style="font-size:.92rem;color:var(--muted);max-width:70ch;margin-top:30px;margin-bottom:0">
+      Findings, datasets, and defense guidelines will be posted here and released publicly as they are published.
+    </p>
+  </div>
+</section>
+
+<!-- ============ FIGURES ============ -->
+<section id="figures">
+  <div class="wrap">
+    <span class="kicker">How It Works</span>
+    <h2>The attack, in three pictures</h2>
+    <p class="sub">Figures from the PIs' published pilot study of the ReBac attack.</p>
+
+    <div class="figs">
+      <figure class="wide">
+        <img src="images/attack-scenarios.jpg" alt="Teardown photos of a keyboard, mouse, game controller, smart home camera, and Arduino fingerprint reader, each with unshielded PCB traces or flex cables labelled, above an attacker transmitter and receiver" width="1500" height="519">
+        <figcaption><b>Where it applies.</b> Teardowns of everyday products reveal the same construction again and again: unshielded PCB traces in keyboards, flex cables in mice, game controllers, smart&#8209;home cameras, and hobbyist modules. An attacker needs only a transmitter and a receiver, no access to the device.</figcaption>
+      </figure>
+
+      <figure class="wide">
+        <img src="images/rebac-principle.jpg" alt="Diagram of the ReBac principle: data-dependent impedance changes at a chip output modulate a backscattered wave, which the attacker filters, amplifies, and decodes into serial data, with measured UART, I2C, and SPI waveforms" width="1500" height="323">
+        <figcaption><b>Why it works.</b> A single physical principle drives the attack. As the data line switches, the driver's output impedance changes with it, so the wave reflecting off the interconnect carries the bit pattern. The attacker filters, amplifies, envelope&#8209;detects, and decodes it. The measured traces on the right show the backscattered waveform tracking the ideal one across UART, I&#178;C, and SPI.</figcaption>
+      </figure>
+
+      <figure class="wide">
+        <img src="images/nintendo-switch.jpg" alt="Nintendo Switch teardown showing left and right rail data cables, and a recovered controller packet with header, button status, stick status, gyroscope and accelerometer fields labelled" width="1500" height="686">
+        <figcaption><b>What it recovers.</b> A detachable game controller communicates with the console over an unshielded rail data cable. From the backscattered signal alone, an individual controller packet resolves into its protocol headers and then its payload: button status, stick position, and full gyroscope and accelerometer readings.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PUBLICATIONS ============ -->
+<section id="publications" class="alt">
+  <div class="wrap">
+    <span class="kicker">Related Publications</span>
+    <h2>Publications</h2>
+    <p class="sub">The pilot study that identified the ReBac attack and motivated this project.</p>
+
+    <ol class="pubs">
+      <li>
+        <span class="t">Your Cable, My Antenna: Eavesdropping Serial Communication via Backscatter Signals</span>
+        <span class="a"><em>Lina Pu</em>, <em>Yu Luo</em>, Song Han, and Junming Diao</span>
+        <span class="v">Proceedings of the IEEE Symposium on Security and Privacy (S&amp;P), pp.&nbsp;1&ndash;17, 2025.</span>
+        <span class="links">
+          <span class="tag hi">Acceptance rate 14.8%</span>
+          <span class="tag">Conference</span>
+        </span>
+      </li>
+    </ol>
+
+    <p style="font-size:.88rem;color:var(--muted);margin-top:22px;max-width:70ch">
+      Publications supported by this award will be added here as they appear.
+      A complete list for PI Pu is on her
+      <a href="https://sites.ua.edu/lpu/" target="_blank" rel="noopener">departmental page</a>.
+    </p>
+  </div>
+</section>
+
+<!-- ============ PEOPLE ============ -->
+<section id="people">
+  <div class="wrap">
+    <span class="kicker">People</span>
+    <h2>Project team</h2>
+
+    <div class="people">
+      <div class="person">
+        <img src="images/lina-pu.jpg" alt="Lina Pu" width="538" height="538">
+        <div>
+          <h3>Lina Pu</h3>
+          <p class="role">Principal Investigator, Award 2555491</p>
+          <p class="aff">Department of Computer Science<br>The University of Alabama</p>
+          <p style="margin-bottom:0">Works at the intersection of wireless networking and hardware security, with a focus on passive and battery&#8209;free communication. Her group's backscatter research is where the ReBac attack was first observed.</p>
+        </div>
+      </div>
+
+      <div class="person">
+        <img src="images/yu-luo.jpg" alt="Yu Luo" width="400" height="400">
+        <div>
+          <h3>Yu Luo</h3>
+          <p class="role">Principal Investigator, Award 2555492</p>
+          <p class="aff">Department of Electrical and Computer Engineering<br>Mississippi State University</p>
+          <p style="margin-bottom:0">Works on embedded systems, backscatter communication, and the Internet of Things. He co&#8209;developed the IoT and IoT Security course now taught at both universities.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="join">
+      <h3>Opportunities</h3>
+      <p>This project supports graduate and undergraduate researchers at both institutions, with hands&#8209;on work in measurement campaigns, modeling, and defense prototyping. Students interested in hardware security, wireless systems, or embedded design are encouraged to get in touch: <a href="mailto:lina.pu@ua.edu">lina.pu@ua.edu</a> at Alabama, or Yu Luo at Mississippi State.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EDUCATION & OUTREACH ============ -->
+<section id="outreach" class="alt">
+  <div class="wrap">
+    <span class="kicker">Related Education &amp; Outreach</span>
+    <h2>A cross&#8209;state pipeline in two EPSCoR states</h2>
+    <p class="sub">Ongoing education and outreach by the PIs that connects directly to the themes of this project. These activities are supported separately and are not funded by this award.</p>
+
+    <article class="card" style="margin-bottom:22px">
+      <span class="num">Curriculum &middot; UA and MSU</span>
+      <h3>A shared IoT and IoT Security course at two universities</h3>
+      <p>The two PIs jointly developed a course on IoT and IoT security and have offered it regularly at both institutions since 2022, as <strong>CS 648</strong> at the University of Alabama and <strong>ECE 8763</strong> at Mississippi State University. Building a single course across two campuses lets students in Alabama and Mississippi work from common material, and gives the PIs a direct route from research findings to the classroom.</p>
+    </article>
+
+    <div class="grid-2">
+      <article class="card figcard">
+        <div class="shotwrap"><img src="images/outreach-ua.jpg" alt="MathCounts STEM Demo activities at the University of Alabama" width="1300" height="798"></div>
+        <span class="num">K&#8209;12 outreach &middot; Alabama</span>
+        <h3>MathCounts STEM Demo</h3>
+        <p>PI Pu serves as Coordinator for MathCounts Tuscaloosa and leads an interactive STEM Demo program connecting College of Engineering faculty with middle&#8209;school students through immersive research demonstrations. Battery&#8209;free IoT has been part of the lineup since 2023. The program received the University's 2024 Excellence in Community Engagement Award. She also organizes IoT and edge computing demonstrations at UA E&#8209;Day with the Women in CyberSecurity student organization she mentors.</p>
+      </article>
+
+      <article class="card figcard">
+        <div class="shotwrap"><img src="images/outreach-msu.jpg" alt="MSTI Summer Camp and CyberTraining activities at Mississippi State University" width="1300" height="1084"></div>
+        <span class="num">K&#8209;12 outreach &middot; Mississippi</span>
+        <h3>MSTI Summer Camp and CyberTraining</h3>
+        <p>PI Luo delivers IoT lab tours through the Mississippi Summer Transportation Institutes, residential camps that serve up to 20 high&#8209;school students each year, more than half of them from groups underrepresented in computing. Participants get hands&#8209;on exposure to embedded hardware, robotics, and the anechoic chamber where the group's wireless measurements are made.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h4>Acknowledgment</h4>
+        <p class="ack">This material is based upon work supported by the National Science Foundation under Grant Nos.&nbsp;2555491 and 2555492. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.</p>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul class="foot-links">
+          <li>Lina Pu, PI, The University of Alabama</li>
+          <li><a href="mailto:lina.pu@ua.edu">lina.pu@ua.edu</a></li>
+          <li style="margin-top:10px">Yu Luo, PI, Mississippi State University</li>
+          <li style="margin-top:14px"><a href="https://www.nsf.gov/awardsearch/show-award?AWD_ID=2555491" target="_blank" rel="noopener">NSF Award 2555491 &#8599;</a></li>
+          <li><a href="https://www.nsf.gov/awardsearch/show-award?AWD_ID=2555492" target="_blank" rel="noopener">NSF Award 2555492 &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="legal">
+      <span>&copy; <span id="yr">2026</span> Lina Pu and Yu Luo.</span>
+      <span>NSF SaTC &middot; CISE/CNS &middot; Oct 2026 &ndash; Sep 2029</span>
+      <span>Last updated August 2026</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  // NSF logo: hide the link rather than show a broken image.
+  var nsf=document.getElementById('nsf-logo');
+  function hideNsf(){ if(nsf && nsf.parentElement) nsf.parentElement.style.display='none'; }
+  if(nsf){
+    if(nsf.complete && nsf.naturalWidth===0){hideNsf();}
+    else{nsf.addEventListener('error',hideNsf);}
+  }
+
+  document.getElementById('yr').textContent=new Date().getFullYear();
+
+  // Scrollspy for the sticky nav.
+  var links=[].slice.call(document.querySelectorAll('.nav ul a'));
+  var secs=links.map(function(a){return document.querySelector(a.getAttribute('href'));}).filter(Boolean);
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(l){l.classList.toggle('on', l.getAttribute('href')==='#'+e.target.id);});
+      }
+    });
+  },{rootMargin:'-68px 0px -70% 0px',threshold:0});
+  secs.forEach(function(s){io.observe(s);});
+});
+</script>
+</body>
+</html>
